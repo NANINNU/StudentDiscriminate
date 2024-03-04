@@ -98,11 +98,10 @@ class MainWindow(QDialog, form_class) :
         #대조하기 버튼을 눌렀을때 Compare 매서드 동작
         self.compareList.clicked.connect(self.Compare)
         
-        #납부자 내보내기 버튼을 눌렀을 때 paidwriteExcel 매서드 동작
-        self.printpaidList.clicked.connect(self.paidwriteExcel)
+        #명단 추출하기 버튼을 눌렀을 때 writeExcel 매서드 동작
+        self.printList.clicked.connect(self.writeExcel)
         
-        #미납부자 내보내기 버튼을 눌렀을 때 unpaidwriteExcel 매서드 동작
-        self.printunpaidList.clicked.connect(self.unpaidwriteExcel)
+
         
         #명단 초기화 버튼을 눌렀을 때 reset 매서드 동작
         self.resetList.clicked.connect(self.reset)
@@ -159,7 +158,7 @@ class MainWindow(QDialog, form_class) :
                 sheet.append(["이름","학번"])
             elif mode == _GLOBAL_LOAD_EXCEL_SURVEY:
                 fileName = '설문자명단_Template.xlsx'
-                sheet.append(["이름","학번","납부여부","재학여부"])
+                sheet.append(["이름","학번","납부여부"])
             elif mode == _GLOBAL_LOAD_EXCEL_STUDENT:
                 fileName = '재학생 명단_Templete.xlsx'
                 sheet.append(["이름", "학번"])
@@ -248,8 +247,8 @@ class MainWindow(QDialog, form_class) :
                 #각 행의 제목 입력
                 self.surveyTable.setHorizontalHeaderLabels(sheetData[0])
                 title = list(sheetData[0])
-                if title[0] != "이름" or title[1] != "학번" or title[2] != "납부여부" or title[3] !="재학여부":
-                    QMessageBox.information(self, "알림", "명단의 첫번째 행에는 '이름','학번','납부여부', '재학여부'가 있어야 합니다.")
+                if title[0] != "이름" or title[1] != "학번" or title[2] != "납부여부" :
+                    QMessageBox.information(self, "알림", "명단의 첫번째 행에는 '이름','학번','납부여부'가 있어야 합니다.")
                     return
                 
                 #엑셀파일 추출
@@ -325,36 +324,40 @@ class MainWindow(QDialog, form_class) :
             return
         
         try:
-            surveyMaxrow = len(self.surveyList)
-            paidMaxrow = len(self.paidList)
-            studentMaxrow = len(self.studentList)
+            surveyMaxrow = len(self.surveyList)#설문자 리스트
+            paidMaxrow = len(self.paidList)#납부자 리스트
+            studentMaxrow = len(self.studentList)#재학생 리스트
             
             #Compare surveyList to paidList
             for RowS in range(surveyMaxrow):
-                result = False
+                # result = False
                 for RowP in range(paidMaxrow):
-                    if self.paidList[RowP][0] == self.surveyList[RowS][0] and self.paidList[RowP][1] == self.surveyList[RowS][1]:
-                        result = True
-                        break
+                    for RowA in range(studentMaxrow):
+                        #납부자 리스트와 재학생 리스트와 설문자 리스트가 일치하는가(납부자)?
+                        if self.paidList[RowP][0] == self.surveyList[RowS][0] and self.paidList[RowP][1] == self.surveyList[RowS][1] and self.studentList[RowA][0] == self.surveyList[RowS][0] and self.studentList[RowA][1] == self.surveyList[RowS][1]:
+                            self.surveyList[RowS][2] = '납부자'
+                            break
+                        #설문자 리스트와 납부자는 일치, 재학생은 불일치(휴학)
+                        elif self.paidList[RowP][0] == self.surveyList[RowS][0] and self.paidList[RowP][1] == self.surveyList[RowS][1] and self.studentList[RowA][0] != self.surveyList[RowS][0] and self.studentList[RowA][1] != self.surveyList[RowS][1]:
+                            self.surveyList[RowS][2] = '휴학생'
+                            break
 
-                if result:
-                    self.surveyList[RowS][2] = '납부자'  
-                else:
-                    self.surveyList[RowS][2] = '미납부자'
+                        #납부자와 재학생 모두 설문자와 불일치(휴학)
+                        elif self.paidList[RowP][0] != self.surveyList[RowS][0] and self.paidList[RowP][1] != self.surveyList[RowS][1] and self.studentList[RowA][0] !=self.surveyList[RowS][0] and self.studentList[RowA][1] != self.surveyList[RowS][1]:
+                            self.surveyList[RowS][2] = '휴학생'
+                            break
+
+                        #설문자와 재학생 일치, 납부자 불일치(미납부자)
+                        elif self.paidList[RowP][0] != self.surveyList[RowS][0] and self.paidList[RowP][1] != self.surveyList[RowS][1] and self.studentList[RowA][0] == self.surveyList[RowS][0] and self.studentList[RowA][1] == self.surveyList[RowS][1]:
+                            self.surveyList[RowS][2] = '미납부자'
+                            break
                     
-            
-            
-            #Compare surveyList to studentList
-            for RowS in range(surveyMaxrow):
-                result = False
-                for RowA in range(studentMaxrow):
-                    if self.studentList[RowA][0] == self.surveyList[RowS][0] and self.studentList[RowA][1] == self.surveyList[RowS][1]:
-                        result = True
-                        break
-                if result:
-                    self.surveyList[RowS][3] = '재학생'
-                else:
-                    self.surveyList[RowS][3] = '휴학생'
+
+
+
+
+
+               
             
             row_index=0      
             for rowData in self.surveyList:
@@ -374,56 +377,28 @@ class MainWindow(QDialog, form_class) :
             print(f'Exception error occurred: {e}')
 ##################################################################################################################
     
-    #WRITE PAID STUDENT LIST IN SURVEY STUDENT LIST    
-    def paidwriteExcel(self):
-        
-        #CHECK IF LOAD LIST AND COMPARE IS DONE
-        if self.paidList == [] or self.surveyList == []:
-            QMessageBox.information(self, "알림", "명단을 먼저 불러오십시오", QMessageBox.Ok)
-            return
-
-        if self.CompareYN == False:
-            QMessageBox.information(self, "알림", "명단을 먼저 대조하십시오", QMessageBox.Ok)
-            return
-        
-        self.writeExcel(mode = _GLOBAL_WRITE_EXCEL_PAID)
-
-    #WRITE UNPAID STUDENT LIST IN SURVEY STUDENT LIST
-    def unpaidwriteExcel(self):
-        
-        #CHECK IF LOAD LIST AND COMPARE IS DONE
-        if self.paidList == [] or self.surveyList == []:
-            QMessageBox.information(self, "알림", "명단을 먼저 불러오십시오", QMessageBox.Ok)
-            return
-        
-        if self.CompareYN == False:
-            QMessageBox.information(self, "알림", "명단을 먼저 대조하십시오", QMessageBox.Ok)
-            return
-        
-        self.writeExcel(mode = _GLOBAL_WRITE_EXCEL_UNPAID)
+    
 
     #WRITE AND SAVE EXCEL FILE
     def writeExcel(self, mode):
-        paidYN = ''
-        fileName = ''
+        if self.paidList == [] or self.surveyList == []:
+            QMessageBox.information(self, "알림", "명단을 먼저 불러오십시오", QMessageBox.Ok)
+            return
+
+        if self.CompareYN == False:
+            QMessageBox.information(self, "알림", "명단을 먼저 대조하십시오", QMessageBox.Ok)
+            return
+        # paidYN = ''
+        fileName = 'OO행사 참여자 명단.xlsx'
         
         try:
-            # 납부자/미납자 분리
-            if mode == _GLOBAL_WRITE_EXCEL_PAID:
-                paidYN = 'O'
-                fileName = '학생회비_납부자.xlsx'
-                
-            elif mode == _GLOBAL_WRITE_EXCEL_UNPAID:
-                paidYN = 'X'
-                fileName = '학생회비_미납부자.xlsx'
             
             wb = op.Workbook()
             sheet = wb.active
-            sheet.append(["이름","학번"])
+            sheet.append(["이름","학번","납부여부"])
             
             for Rows in range(len(self.surveyList)):
-                if self.surveyList[Rows][2] == paidYN:
-                    sheet.append([self.surveyList[Rows][0], self.surveyList[Rows][1]])
+                sheet.append([self.surveyList[Rows][0], self.surveyList[Rows][1], self.surveyList[Rows][2]])
 
             wb.save(fileName)
             

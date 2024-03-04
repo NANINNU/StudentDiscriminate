@@ -20,7 +20,7 @@
    <string>학생회비 납부자 명단 작성프로그램 ver 1.0</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="newResource.qrc">
+   <iconset>
     <normaloff>:/icon/appIcon.ico</normaloff>:/icon/appIcon.ico</iconset>
   </property>
   <property name="sizeGripEnabled">
@@ -34,7 +34,7 @@
     <rect>
      <x>1090</x>
      <y>600</y>
-     <width>141</width>
+     <width>171</width>
      <height>41</height>
     </rect>
    </property>
@@ -579,9 +579,9 @@ Download</string>
   <widget class="QPushButton" name="programExit">
    <property name="geometry">
     <rect>
-     <x>1540</x>
+     <x>1470</x>
      <y>600</y>
-     <width>61</width>
+     <width>131</width>
      <height>41</height>
     </rect>
    </property>
@@ -629,12 +629,12 @@ Download</string>
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QPushButton" name="printpaidList">
+  <widget class="QPushButton" name="printList">
    <property name="geometry">
     <rect>
-     <x>1240</x>
+     <x>1280</x>
      <y>600</y>
-     <width>141</width>
+     <width>171</width>
      <height>41</height>
     </rect>
    </property>
@@ -653,34 +653,7 @@ Download</string>
     </font>
    </property>
    <property name="text">
-    <string>납부자 내보내기</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="printunpaidList">
-   <property name="geometry">
-    <rect>
-     <x>1390</x>
-     <y>600</y>
-     <width>141</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="font">
-    <font>
-     <family>맑은 고딕</family>
-     <pointsize>9</pointsize>
-     <weight>50</weight>
-     <bold>false</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>미납부자 내보내기</string>
+    <string>명단 추출하기</string>
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="txtOutputFileName">
@@ -1040,8 +1013,7 @@ Download</string>
   <zorder>compareList</zorder>
   <zorder>surveyFilepath</zorder>
   <zorder>programExit</zorder>
-  <zorder>printpaidList</zorder>
-  <zorder>printunpaidList</zorder>
+  <zorder>printList</zorder>
   <zorder>txtOutputFileName</zorder>
   <zorder>resetList</zorder>
   <zorder>studentGroupBox</zorder>
