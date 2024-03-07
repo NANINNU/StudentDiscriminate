@@ -9,10 +9,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import openpyxl as op
 
-#TODO 
-#납부자 명단이 초기화 되지 않음.(해결완료)
-#설문자 명단과 재학생 명단을 비교하여 재학생과 휴학생 구분하는 기능 구현
-#대조된 명단을 하나의 파일로 묶어서 추출하기
 
 #UI Packaging
 def resourcePath(relativePath):
@@ -35,7 +31,7 @@ _GLOBAL_WRITE_EXCEL_PAID = 'PAID'
 _GLOBAL_WRITE_EXCEL_UNPAID = 'UNPAID'
 
 
-# ######################################################################################
+########################################################################################
 #화면을 띄우는데 사용되는 Class 선언
 class MainWindow(QDialog, form_class) :
     def __init__(self) :
@@ -323,41 +319,10 @@ class MainWindow(QDialog, form_class) :
             QMessageBox.information(self, "알림", "명단을 먼저 불러오십시오")
             return
         
-        try:
-            surveyMaxrow = len(self.surveyList)#설문자 리스트
-            paidMaxrow = len(self.paidList)#납부자 리스트
-            studentMaxrow = len(self.studentList)#재학생 리스트
-            
-            #Compare surveyList to paidList
-            for RowS in range(surveyMaxrow):
-                # result = False
-                for RowP in range(paidMaxrow):
-                    for RowA in range(studentMaxrow):
-                        #납부자 리스트와 재학생 리스트와 설문자 리스트가 일치하는가(납부자)?
-                        if self.paidList[RowP][0] == self.surveyList[RowS][0] and self.paidList[RowP][1] == self.surveyList[RowS][1] and self.studentList[RowA][0] == self.surveyList[RowS][0] and self.studentList[RowA][1] == self.surveyList[RowS][1]:
-                            self.surveyList[RowS][2] = '납부자'
-                            break
-                        #설문자 리스트와 납부자는 일치, 재학생은 불일치(휴학)
-                        elif self.paidList[RowP][0] == self.surveyList[RowS][0] and self.paidList[RowP][1] == self.surveyList[RowS][1] and self.studentList[RowA][0] != self.surveyList[RowS][0] and self.studentList[RowA][1] != self.surveyList[RowS][1]:
-                            self.surveyList[RowS][2] = '휴학생'
-                            break
-
-                        #납부자와 재학생 모두 설문자와 불일치(휴학)
-                        elif self.paidList[RowP][0] != self.surveyList[RowS][0] and self.paidList[RowP][1] != self.surveyList[RowS][1] and self.studentList[RowA][0] !=self.surveyList[RowS][0] and self.studentList[RowA][1] != self.surveyList[RowS][1]:
-                            self.surveyList[RowS][2] = '휴학생'
-                            break
-
-                        #설문자와 재학생 일치, 납부자 불일치(미납부자)
-                        elif self.paidList[RowP][0] != self.surveyList[RowS][0] and self.paidList[RowP][1] != self.surveyList[RowS][1] and self.studentList[RowA][0] == self.surveyList[RowS][0] and self.studentList[RowA][1] == self.surveyList[RowS][1]:
-                            self.surveyList[RowS][2] = '미납부자'
-                            break
-                    
-
-
-
-
-
-               
+        try:        
+            for row, val in enumerate(self.surveyList):
+                self.surveyList[row][2] = self.checkStudent(val[1])
+             
             
             row_index=0      
             for rowData in self.surveyList:
@@ -377,6 +342,19 @@ class MainWindow(QDialog, form_class) :
             print(f'Exception error occurred: {e}')
 ##################################################################################################################
     
+    def checkStudent(self, surveyed):
+        for student in self.studentList:
+            if surveyed == student[1]:
+                return self.checkPaid(surveyed)
+        return '휴학생'
+            
+###################################################################################################################
+    def checkPaid(self, student):
+        for paid in self.paidList:
+            if student == paid[1]:
+                return '납부자'
+        return '미납부자'
+####################################################################################################################
     
 
     #WRITE AND SAVE EXCEL FILE
@@ -388,7 +366,6 @@ class MainWindow(QDialog, form_class) :
         if self.CompareYN == False:
             QMessageBox.information(self, "알림", "명단을 먼저 대조하십시오", QMessageBox.Ok)
             return
-        # paidYN = ''
         fileName = 'OO행사 참여자 명단.xlsx'
         
         try:
@@ -401,8 +378,6 @@ class MainWindow(QDialog, form_class) :
                 sheet.append([self.surveyList[Rows][0], self.surveyList[Rows][1], self.surveyList[Rows][2]])
 
             wb.save(fileName)
-            
-            # self.surveyList = []
             
             #Message: Complete writing excel file
             QMessageBox.information(self, "알림", "파일이 내보내졌습니다")
